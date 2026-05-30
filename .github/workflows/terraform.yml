@@ -124,13 +124,6 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform init
 
-      - name: Configure kubectl
-        run: |
-          aws eks update-kubeconfig \
-            --name project-bedrock-cluster \
-            --region ${{ env.AWS_REGION }}
-          echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
-
       - name: Wait for EKS Cluster Readiness
         run: |
           echo "Waiting for EKS cluster to be ACTIVE..."
@@ -141,7 +134,7 @@ jobs:
               --name project-bedrock-cluster \
               --region ${{ env.AWS_REGION }} \
               --query 'cluster.status' \
-              --output text)
+              --output text 2>/dev/null || echo "NOT_FOUND")
             echo "Cluster status: $status"
             if [ "$status" = "ACTIVE" ]; then
               echo "EKS cluster is ACTIVE"
@@ -156,6 +149,13 @@ jobs:
             echo "ERROR: Cluster did not reach ACTIVE state within timeout"
             exit 1
           fi
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --name project-bedrock-cluster \
+            --region ${{ env.AWS_REGION }}
+          echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
 
       - name: Terraform Apply
         working-directory: ${{ env.TF_WORKING_DIR }}

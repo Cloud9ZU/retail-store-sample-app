@@ -21,6 +21,13 @@ module "eks" {
   app_namespace      = var.app_namespace
 }
 
+# Wait for cluster to be ACTIVE before proceeding with Kubernetes resources
+resource "time_sleep" "wait_for_cluster" {
+  depends_on = [module.eks]
+
+  create_duration = "30s"
+}
+
 module "rds" {
   source = "./modules/rds"
 
@@ -61,7 +68,7 @@ resource "kubernetes_namespace_v1" "retail_app" {
     }
   }
 
-  depends_on = [module.eks]
+  depends_on = [time_sleep.wait_for_cluster]
 }
 
 resource "helm_release" "alb_controller" {
