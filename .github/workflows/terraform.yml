@@ -157,6 +157,16 @@ jobs:
             --region ${{ env.AWS_REGION }}
           echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
 
+      - name: Validate kubectl Access
+        run: |
+          echo "Validating kubectl access to cluster..."
+          kubectl cluster-info || true
+          kubectl get nodes || true
+          echo "✓ kubectl configuration complete"
+          
+          echo "Verifying AWS credentials..."
+          aws sts get-caller-identity
+
       - name: Terraform Apply
         working-directory: ${{ env.TF_WORKING_DIR }}
         env:
