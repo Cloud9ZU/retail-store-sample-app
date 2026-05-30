@@ -73,6 +73,8 @@ resource "helm_release" "alb_controller" {
   force_update     = true
   cleanup_on_fail  = true
   recreate_pods    = true
+  wait             = true
+  timeout          = 600
 
   values = [
     yamlencode({
@@ -297,7 +299,7 @@ resource "helm_release" "catalog" {
   chart           = "${path.module}/../../src/catalog/chart"
   namespace       = var.app_namespace
   wait            = true
-  timeout         = 300
+  timeout         = 600
   force_update    = true
   cleanup_on_fail = true
 
@@ -395,7 +397,7 @@ resource "helm_release" "cart" {
   chart           = "${path.module}/../../src/cart/chart"
   namespace       = var.app_namespace
   wait            = true
-  timeout         = 300
+  timeout         = 600
   force_update    = true
   cleanup_on_fail = true
 
@@ -412,7 +414,7 @@ resource "helm_release" "orders" {
   chart           = "${path.module}/../../src/orders/chart"
   namespace       = var.app_namespace
   wait            = true
-  timeout         = 300
+  timeout         = 600
   force_update    = true
   cleanup_on_fail = true
 
@@ -488,7 +490,7 @@ resource "helm_release" "checkout" {
   chart           = "${path.module}/../../src/checkout/chart"
   namespace       = var.app_namespace
   wait            = true
-  timeout         = 300
+  timeout         = 600
   force_update    = true
   cleanup_on_fail = true
 
@@ -505,7 +507,7 @@ resource "helm_release" "ui" {
   chart           = "${path.module}/../../src/ui/chart"
   namespace       = var.app_namespace
   wait            = true
-  timeout         = 300
+  timeout         = 600
   force_update    = true
   cleanup_on_fail = true
 
