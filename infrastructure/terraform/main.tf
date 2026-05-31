@@ -72,16 +72,16 @@ resource "kubernetes_namespace_v1" "retail_app" {
 }
 
 resource "helm_release" "alb_controller" {
-  name             = "aws-load-balancer-controller"
-  repository       = "https://aws.github.io/eks-charts"
-  chart            = "aws-load-balancer-controller"
-  namespace        = "kube-system"
-  version          = "1.11.0"
-  force_update     = true
-  cleanup_on_fail  = true
-  recreate_pods    = true
-  wait             = true
-  timeout          = 600
+  name            = "aws-load-balancer-controller"
+  repository      = "https://aws.github.io/eks-charts"
+  chart           = "aws-load-balancer-controller"
+  namespace       = "kube-system"
+  version         = "1.11.0"
+  force_update    = true
+  cleanup_on_fail = true
+  recreate_pods   = true
+  wait            = true
+  timeout         = 600
 
   values = [
     yamlencode({
@@ -310,10 +310,10 @@ resource "helm_release" "catalog" {
   force_update    = true
   cleanup_on_fail = true
 
- set {
-  name  = "image.tag"
-  value = "1.2.1"
-}
+  set {
+    name  = "image.tag"
+    value = "1.2.1"
+  }
 
   set {
     name  = "app.persistence.provider"
@@ -425,10 +425,10 @@ resource "helm_release" "orders" {
   force_update    = true
   cleanup_on_fail = true
 
-set {
-  name  = "image.tag"
-  value = "1.2.1"
-}
+  set {
+    name  = "image.tag"
+    value = "1.2.1"
+  }
 
   set {
     name  = "app.persistence.provider"
@@ -607,11 +607,11 @@ resource "kubernetes_ingress_v1" "retail_app" {
     name      = "retail-store-ingress"
     namespace = var.app_namespace
     annotations = {
-      "kubernetes.io/ingress.class"                        = "alb"
-      "alb.ingress.kubernetes.io/scheme"                   = "internet-facing"
-      "alb.ingress.kubernetes.io/target-type"              = "ip"
-      "alb.ingress.kubernetes.io/listen-ports"             = "[{\"HTTP\": 80}]"
-      "alb.ingress.kubernetes.io/healthcheck-path"         = "/actuator/health/liveness"
+      "kubernetes.io/ingress.class"                            = "alb"
+      "alb.ingress.kubernetes.io/scheme"                       = "internet-facing"
+      "alb.ingress.kubernetes.io/target-type"                  = "ip"
+      "alb.ingress.kubernetes.io/listen-ports"                 = "[{\"HTTP\": 80}]"
+      "alb.ingress.kubernetes.io/healthcheck-path"             = "/actuator/health/liveness"
       "alb.ingress.kubernetes.io/healthcheck-interval-seconds" = "30"
     }
   }
