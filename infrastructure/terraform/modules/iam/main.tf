@@ -66,8 +66,8 @@ resource "aws_secretsmanager_secret" "dev_view_password" {
 resource "aws_secretsmanager_secret_version" "dev_view_password" {
   secret_id = aws_secretsmanager_secret.dev_view_password.id
   secret_string = jsonencode({
-    username         = aws_iam_user.dev_view.name
-    password         = aws_iam_user_login_profile.dev_view.password
+    username          = aws_iam_user.dev_view.name
+    password          = aws_iam_user_login_profile.dev_view.password
     access_key_id     = aws_iam_access_key.dev_view.id
     secret_access_key = aws_iam_access_key.dev_view.secret
     console_url       = "https://${data.aws_caller_identity.current.account_id}.signin.aws.amazon.com/console"
