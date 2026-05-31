@@ -50,34 +50,21 @@ data "aws_eks_cluster_auth" "main" {
 }
 
 provider "kubernetes" {
-  host                   = data.aws_eks_cluster.main.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.main.certificate_authority[0].data)
+  host                   = try(data.aws_eks_cluster.main.endpoint, "")
+  cluster_ca_certificate = try(base64decode(data.aws_eks_cluster.main.certificate_authority[0].data), "")
+  token                  = try(data.aws_eks_cluster_auth.main.token, "")
   
-  exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
-    command     = "aws"
-    args = ["eks", "get-token", "--cluster-name", var.cluster_name, "--region", var.aws_region]
-    
-    # Set environment variables for AWS credentials
-    env = {
-      AWS_REGION = var.aws_region
-    }
-  }
+  # Fallback to kubeconfig if direct auth fails
+  config_path = try(pathexpand("~/.kube/config"), null)
 }
 
 provider "helm" {
   kubernetes {
-    host                   = data.aws_eks_cluster.main.endpoint
-    cluster_ca_certificate = base64decode(data.aws_eks_cluster.main.certificate_authority[0].data)
+    host                   = try(data.aws_eks_cluster.main.endpoint, "")
+    cluster_ca_certificate = try(base64decode(data.aws_eks_cluster.main.certificate_authority[0].data), "")
+    token                  = try(data.aws_eks_cluster_auth.main.token, "")
     
-    exec {
-      api_version = "client.authentication.k8s.io/v1beta1"
-      command     = "aws"
-      args = ["eks", "get-token", "--cluster-name", var.cluster_name, "--region", var.aws_region]
-      
-      env = {
-        AWS_REGION = var.aws_region
-      }
-    }
+    # Fallback to kubeconfig if direct auth fails
+    config_path = try(pathexpand("~/.kube/config"), null)
   }
 }
