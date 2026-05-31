@@ -50,11 +50,34 @@ data "aws_eks_cluster_auth" "main" {
 }
 
 provider "kubernetes" {
-  config_path = pathexpand("~/.kube/config")
+  host                   = data.aws_eks_cluster.main.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.main.certificate_authority[0].data)
+  
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "aws"
+    args = ["eks", "get-token", "--cluster-name", var.cluster_name, "--region", var.aws_region]
+    
+    # Set environment variables for AWS credentials
+    env = {
+      AWS_REGION = var.aws_region
+    }
+  }
 }
 
 provider "helm" {
   kubernetes {
-    config_path = pathexpand("~/.kube/config")
+    host                   = data.aws_eks_cluster.main.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.main.certificate_authority[0].data)
+    
+    exec {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      command     = "aws"
+      args = ["eks", "get-token", "--cluster-name", var.cluster_name, "--region", var.aws_region]
+      
+      env = {
+        AWS_REGION = var.aws_region
+      }
+    }
   }
 }
