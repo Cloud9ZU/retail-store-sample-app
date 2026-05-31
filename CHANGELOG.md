@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.5.1](https://github.com/Cloud9ZU/retail-store-sample-app/compare/v1.5.0...v1.5.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* add KUBE_CONFIG_PATH to CI/CD pipeline for kubernetes provider auth ([8b41cd0](https://github.com/Cloud9ZU/retail-store-sample-app/commit/8b41cd053168fd3e6e066aafd7c2e4f477f3dce4))
+* E2E-test fille permission ([1af709c](https://github.com/Cloud9ZU/retail-store-sample-app/commit/1af709c95d2abd417f6e893069ad1c4fd1c64f59))
+* grading.json ([fc8f60e](https://github.com/Cloud9ZU/retail-store-sample-app/commit/fc8f60ed3b8bfabd85f5f4f8e5f8a2e762f420a3))
+* Kubernetes provider auth - add explicit cluster readiness wait ([83aaad1](https://github.com/Cloud9ZU/retail-store-sample-app/commit/83aaad1bad0038ad95eb9dccfd490e7d3b5a0e65))
+* Kubernetes provider auth - skip validation and validate kubeconfig ([86db9af](https://github.com/Cloud9ZU/retail-store-sample-app/commit/86db9af32f55d04b73f193e1138b3acdc01ffc7d))
+* Kubernetes provider Configuration ([c095565](https://github.com/Cloud9ZU/retail-store-sample-app/commit/c0955654ec605abd2eb204c3612fffd5a9c6d058))
+* Replace terraform workflow with exec-based auth version ([fbb7155](https://github.com/Cloud9ZU/retail-store-sample-app/commit/fbb7155371fc3513a6f56be05bc63ff09a0e0d39))
+* Use hybrid auth - direct token + kubeconfig fallback ([4d24a50](https://github.com/Cloud9ZU/retail-store-sample-app/commit/4d24a500be762da553c6ea08ec3a43520ccd44d4))
+* Use kubeconfig file for Kubernetes provider auth ([5eed331](https://github.com/Cloud9ZU/retail-store-sample-app/commit/5eed331e9ab1b344b346b831c619a59ee5843fc3))
+
 ## [1.5.0](https://github.com/aws-containers/retail-store-sample-app/compare/v1.4.2...v1.5.0) (2026-04-29)
 
 
