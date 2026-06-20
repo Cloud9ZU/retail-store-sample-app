@@ -50,15 +50,28 @@ jobs:
           TARGET_ARCH: ${{ matrix.arch }}
           AWS_ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
         run: |
+          set -euo pipefail
+
+          if [ -z "${AWS_ECR_REPOSITORY}" ]; then
+            echo "AWS_ECR_REPOSITORY secret is required, for example: public.ecr.aws/<your-ecr-public-alias>"
+            exit 1
+          fi
+          AWS_ECR_REPOSITORY="${AWS_ECR_REPOSITORY%/}"
+
           export IMAGE_TAG=${TAG_NAME#v}
           export GOPROXY="https://proxy.golang.org,direct"
+          services="checkout ui orders catalog cart"
 
           # Build first to prevent partial container set push
-          yarn nx run-many -t container --projects=tag:service --tags ${AWS_ECR_REPOSITORY}/retail-store-sample-{projectName}:${IMAGE_TAG}-${TARGET_ARCH}
+          for project in $services; do
+            yarn nx container "$project" --tags "${AWS_ECR_REPOSITORY}/retail-store-sample-${project}:${IMAGE_TAG}-${TARGET_ARCH}"
+          done
           yarn nx container load-generator --tags ${AWS_ECR_REPOSITORY}/retail-store-sample-utils:load-gen.${IMAGE_TAG}-${TARGET_ARCH}
 
           # Then push
-          yarn nx run-many -t container --push true --projects=tag:service --tags ${AWS_ECR_REPOSITORY}/retail-store-sample-{projectName}:${IMAGE_TAG}-${TARGET_ARCH}
+          for project in $services; do
+            yarn nx container "$project" --push true --tags "${AWS_ECR_REPOSITORY}/retail-store-sample-${project}:${IMAGE_TAG}-${TARGET_ARCH}"
+          done
           yarn nx container load-generator --push true --tags ${AWS_ECR_REPOSITORY}/retail-store-sample-utils:load-gen.${IMAGE_TAG}-${TARGET_ARCH}
 
   publish:
@@ -90,9 +103,20 @@ jobs:
           TAG_NAME: ${{ inputs.version }}
           AWS_ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
         run: |
-          export IMAGE_TAG=${TAG_NAME#v}
+          set -euo pipefail
 
-          yarn nx run-many -t manifest --projects=tag:service --args="--repository=${AWS_ECR_REPOSITORY}/retail-store-sample-{projectName},--tag=${IMAGE_TAG}"
+          if [ -z "${AWS_ECR_REPOSITORY}" ]; then
+            echo "AWS_ECR_REPOSITORY secret is required, for example: public.ecr.aws/<your-ecr-public-alias>"
+            exit 1
+          fi
+          AWS_ECR_REPOSITORY="${AWS_ECR_REPOSITORY%/}"
+
+          export IMAGE_TAG=${TAG_NAME#v}
+          services="checkout ui orders catalog cart"
+
+          for project in $services; do
+            yarn nx manifest "$project" --args="--repository=${AWS_ECR_REPOSITORY}/retail-store-sample-${project},--tag=${IMAGE_TAG}"
+          done
           yarn nx manifest load-generator --args="--repository=${AWS_ECR_REPOSITORY}/retail-store-sample-utils,--tag=load-gen.${IMAGE_TAG}"
 
           yarn nx run-many -t helm --projects=tag:service --remote oci://${AWS_ECR_REPOSITORY} --push

@@ -46,7 +46,7 @@ resource "aws_security_group" "cluster" {
 # EKS Cluster
 resource "aws_eks_cluster" "main" {
   name     = var.cluster_name
-  version  = "1.32"
+  version  = "1.34"
   role_arn = aws_iam_role.cluster.arn
 
   access_config {
@@ -172,6 +172,7 @@ resource "aws_eks_node_group" "main" {
   node_role_arn   = aws_iam_role.node_group.arn
   subnet_ids      = var.private_subnet_ids
   instance_types  = [var.node_instance_type]
+  version         = aws_eks_cluster.main.version
 
   scaling_config {
     desired_size = var.node_desired_size

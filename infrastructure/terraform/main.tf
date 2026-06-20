@@ -68,20 +68,24 @@ resource "kubernetes_namespace_v1" "retail_app" {
     }
   }
 
-  depends_on = [time_sleep.wait_for_cluster]
+  depends_on = [
+    time_sleep.wait_for_cluster,
+    aws_eks_access_policy_association.admin
+  ]
 }
 
 resource "helm_release" "alb_controller" {
-  name            = "aws-load-balancer-controller"
-  repository      = "https://aws.github.io/eks-charts"
-  chart           = "aws-load-balancer-controller"
-  namespace       = "kube-system"
-  version         = "1.11.0"
-  force_update    = true
-  cleanup_on_fail = true
-  recreate_pods   = true
-  wait            = true
-  timeout         = 600
+  name                       = "aws-load-balancer-controller"
+  repository                 = "https://aws.github.io/eks-charts"
+  chart                      = "aws-load-balancer-controller"
+  namespace                  = "kube-system"
+  version                    = "1.11.0"
+  force_update               = true
+  cleanup_on_fail            = true
+  recreate_pods              = true
+  disable_openapi_validation = true
+  wait                       = true
+  timeout                    = 600
 
   values = [
     yamlencode({
@@ -102,6 +106,12 @@ resource "helm_release" "alb_controller" {
     module.eks,
     kubernetes_namespace_v1.retail_app
   ]
+}
+
+resource "time_sleep" "wait_for_alb_controller_webhook" {
+  depends_on = [helm_release.alb_controller]
+
+  create_duration = "60s"
 }
 
 # Read MySQL credentials from Secrets Manager and create Kubernetes secret
@@ -302,13 +312,14 @@ resource "aws_eks_access_policy_association" "admin" {
 
 
 resource "helm_release" "catalog" {
-  name            = "catalog"
-  chart           = "${path.module}/../../src/catalog/chart"
-  namespace       = var.app_namespace
-  wait            = true
-  timeout         = 600
-  force_update    = true
-  cleanup_on_fail = true
+  name                       = "catalog"
+  chart                      = "${path.module}/../../src/catalog/chart"
+  namespace                  = var.app_namespace
+  wait                       = true
+  timeout                    = 600
+  force_update               = true
+  cleanup_on_fail            = true
+  disable_openapi_validation = true
 
   set {
     name  = "image.tag"
@@ -394,36 +405,40 @@ resource "helm_release" "catalog" {
   }
 
   depends_on = [
+    time_sleep.wait_for_alb_controller_webhook,
     kubernetes_namespace_v1.retail_app,
     kubernetes_secret_v1.mysql_credentials
   ]
 }
 
 resource "helm_release" "cart" {
-  name            = "cart"
-  chart           = "${path.module}/../../src/cart/chart"
-  namespace       = var.app_namespace
-  wait            = true
-  timeout         = 600
-  force_update    = true
-  cleanup_on_fail = true
+  name                       = "cart"
+  chart                      = "${path.module}/../../src/cart/chart"
+  namespace                  = var.app_namespace
+  wait                       = true
+  timeout                    = 600
+  force_update               = true
+  cleanup_on_fail            = true
+  disable_openapi_validation = true
 
   values = [file("${path.module}/../../infrastructure/helm/cart-values.yaml")]
 
   depends_on = [
+    time_sleep.wait_for_alb_controller_webhook,
     kubernetes_namespace_v1.retail_app,
     kubernetes_service_account_v1.cart
   ]
 }
 
 resource "helm_release" "orders" {
-  name            = "orders"
-  chart           = "${path.module}/../../src/orders/chart"
-  namespace       = var.app_namespace
-  wait            = true
-  timeout         = 600
-  force_update    = true
-  cleanup_on_fail = true
+  name                       = "orders"
+  chart                      = "${path.module}/../../src/orders/chart"
+  namespace                  = var.app_namespace
+  wait                       = true
+  timeout                    = 600
+  force_update               = true
+  cleanup_on_fail            = true
+  disable_openapi_validation = true
 
   set {
     name  = "image.tag"
@@ -486,6 +501,7 @@ resource "helm_release" "orders" {
   }
 
   depends_on = [
+    time_sleep.wait_for_alb_controller_webhook,
     kubernetes_namespace_v1.retail_app,
     kubernetes_secret_v1.postgres_credentials,
     kubernetes_secret_v1.rabbitmq_credentials
@@ -493,30 +509,33 @@ resource "helm_release" "orders" {
 }
 
 resource "helm_release" "checkout" {
-  name            = "checkout"
-  chart           = "${path.module}/../../src/checkout/chart"
-  namespace       = var.app_namespace
-  wait            = true
-  timeout         = 600
-  force_update    = true
-  cleanup_on_fail = true
+  name                       = "checkout"
+  chart                      = "${path.module}/../../src/checkout/chart"
+  namespace                  = var.app_namespace
+  wait                       = true
+  timeout                    = 600
+  force_update               = true
+  cleanup_on_fail            = true
+  disable_openapi_validation = true
 
   values = [file("${path.module}/../../infrastructure/helm/checkout-values.yaml")]
 
   depends_on = [
+    time_sleep.wait_for_alb_controller_webhook,
     kubernetes_namespace_v1.retail_app,
     helm_release.orders
   ]
 }
 
 resource "helm_release" "ui" {
-  name            = "ui"
-  chart           = "${path.module}/../../src/ui/chart"
-  namespace       = var.app_namespace
-  wait            = true
-  timeout         = 600
-  force_update    = true
-  cleanup_on_fail = true
+  name                       = "ui"
+  chart                      = "${path.module}/../../src/ui/chart"
+  namespace                  = var.app_namespace
+  wait                       = true
+  timeout                    = 600
+  force_update               = true
+  cleanup_on_fail            = true
+  disable_openapi_validation = true
 
   set {
     name  = "image.tag"
@@ -592,6 +611,7 @@ resource "helm_release" "ui" {
   }
 
   depends_on = [
+    time_sleep.wait_for_alb_controller_webhook,
     kubernetes_namespace_v1.retail_app,
     helm_release.catalog,
     helm_release.cart,

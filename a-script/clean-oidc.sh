@@ -1,4 +1,5 @@
 #!/bin/bash
+export AWS_PROFILE="amazu"
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 ROLE_NAME="github-actions-bedrock-role"
 export AWS_PROFILE="amazu"
