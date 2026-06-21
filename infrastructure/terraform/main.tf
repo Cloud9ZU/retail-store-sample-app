@@ -168,7 +168,7 @@ resource "kubernetes_secret_v1" "rabbitmq_credentials" {
   depends_on = [kubernetes_namespace_v1.retail_app]
 }
 
-# IAM role for cart service to access DynamoDB (IRSA)
+# #IAM role for cart service to access DynamoDB (IRSA)
 data "aws_iam_policy_document" "cart_assume" {
   statement {
     effect = "Allow"
